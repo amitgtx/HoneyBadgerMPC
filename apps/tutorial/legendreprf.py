@@ -1,13 +1,44 @@
 '''
-This implementation is a PoC to demonstrate how an MPC-firendly PRF can be used for realizing the "Proof of Custody" scheme. In short, Proof of Custody is a way for nodes (called validators) to "prove" that they are really storing a file which they are obligated to store. Prior realizations of this scheme utilized a "mix" function based on SHA256. Future goal is to make use of primitives which allow i) validator pools to be set up in a secure, trustless manner and (ii) allow one-party validators to spread their secret across several machines, reducing the risk of secrets getting compromised. In order to meet this goal, it is required that the primitive is MPC-friendly which, unfortunately, is not a property of SHA256. Fortunately, the "mix" function in the Proof of CUstody scheme can be replaced with any PRF. Consequently, it was proposed that Legendre PRF, an MPC-friendly primitive, would be a good candidate for such replacement.
+This implementation is a PoC to demonstrate how an MPC-firendly PRF 
+can be used for realizing the "Proof of Custody" scheme. In short, 
+Proof of Custody is a way for nodes (called validators) to "prove" 
+that they are really storing a file which they are obligated to 
+store. Prior realizations of this scheme utilized a "mix" function 
+based on SHA256. Future goal is to make use of primitives which allow 
+i) validator pools to be set up in a secure, trustless manner and 
+(ii) allow one-party validators to spread their secret across several 
+machines, reducing the risk of secrets getting compromised. In order 
+to meet this goal, it is required that the primitive is MPC-friendly 
+which, unfortunately, is not a property of SHA256. Fortunately, the 
+"mix" function in the Proof of CUstody scheme can be replaced with 
+any PRF. Consequently, it was proposed that Legendre PRF, an 
+MPC-friendly primitive, would be a good candidate for such 
+replacement.
 
-The setting is such that there are n nodes out of which t might be malicious. There is a secret-key K which is secret-shared among the n nodes using a (t, n) threshold secret-sharing scheme. This means that atleast a group of t+1 nodes are required in-order to reconstruct the secret-key K. In order to "prove the custody" of set of B blocks - {X1, X2, .... XB} - which is basically a public dataset of B field elements, the nodes compute the output of legendre PRF function using their secret key-share [k] and the B field elements as input. This output is represented in the following equation:
+The setting is such that there are n nodes out of which t might be 
+malicious. There is a secret-key K which is secret-shared among the n 
+nodes using a (t, n) threshold secret-sharing scheme. This means that 
+atleast a group of t+1 nodes are required in-order to reconstruct the 
+secret-key K. In order to "prove the custody" of set of B blocks 
+- {X1, X2, .... XB} - which is basically a public dataset of B field 
+elements, the nodes compute the output of legendre PRF function using 
+their secret key-share [k] and the B field elements as input. This 
+output is represented in the following equation:
     
 
 F_[k](X) = legendre_p(([k]+X1) * ([k]+X2) * ([k]+X3)  .... ([k]+XB))
 
 
-Once each node has computed its share of the output, those outputs can be combined in-order to reconstruct the actual output. In a setting where n > 3t, we can use a technique called robust interpolation for such reconstruction. This technique ensures that i)reconstructed output always matches with the expected output ii) nodes which did not submit or submitted incorrect shares of their PRF output are always identified. This identification of malicious behaviour (coupled with a scheme which provides rewards to nodes submitting correct output shares) incentivizes the nodes to perform the MPC computation honestly.
+Once each node has computed its share of the output, those outputs 
+can be combined in-order to reconstruct the actual output. In a 
+setting where n > 3t, we can use a technique called robust 
+interpolation for such reconstruction. This technique ensures that 
+i)reconstructed output always matches with the expected output 
+ii) nodes which did not submit or submitted incorrect shares of their 
+PRF output are always identified. This identification of malicious 
+behaviour (coupled with a scheme which provides rewards to nodes 
+submitting correct output shares) incentivizes the nodes to perform 
+the MPC computation honestly.
 
 
 Below, we outline the protocol that each node follows:
@@ -15,8 +46,10 @@ Below, we outline the protocol that each node follows:
 Precompute:
 -  [k],[k^2],...[k^B]   powers of k for each block
 Protocol:
-- Compute [y] where y = (k+X1)(k+X2)....(k+XB) through Local computations.
-     This is a polynomial y = f(k) where the coefficients of f can be determined from constants X1,...,XB, and we have powers of [k] precomputed
+- Compute [y] where y = (k+X1)(k+X2)....(k+XB) through Local 
+computations. This is a polynomial y = f(k) where the coefficients of 
+f can be determined from constants X1,...,XB, and we have powers of 
+[k] precomputed
 - Compute [F_k(X)] := [y]^((p-1)/2) through log2 p multiply/squarings
 - Open F_k(X) and reconstruct
 
