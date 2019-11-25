@@ -46,6 +46,7 @@ Below, we outline the protocol that each node follows:
 
 Precompute:
 -  [k],[k^2],...[k^B]   powers of k for each block
+
 Protocol:
 - Compute [y] where y = (k+X1)(k+X2)....(k+XB) through Local 
 computations. This is a polynomial y = f(k) where the coefficients of 
@@ -53,6 +54,16 @@ f can be determined from constants X1,...,XB, and we have powers of
 [k] precomputed
 - Compute [F_k(X)] := [y]^((p-1)/2) through log2 p multiply/squarings
 - Open F_k(X) and reconstruct
+
+
+The above protocol is implemented inside the prog() function. in 2 different phases:
+
+- Offline Phase : In this phase, all nodes collectively obtain a (t,n) secret-sharing of random key K, and then each node computes succesive powers of their secret share ([k], [k^2], [k^3], etc) using the offline_powers_generation() function
+
+- Online Phase : In this phase, nodes receive a file (represented as an array X of B elements) as input, and then run the MPC protocol by consuming the preprocessed powers to obtain a secret-sharing fk_x of the desired output. The logic for same is present in the eval() function. After this, each node reconstructs the desired output FK_x using the open() function.
+
+
+This implementation differs from a real-world deployment in the following way: The nodes in this demo are "simulated" as async tasks which execute concurrently on the same system and communicate with each other using message passing. However, in the real-world, each node would correspond to a validator (a standalone system) and the communication would happen over network sockets
 
 '''
 
@@ -123,8 +134,7 @@ async def eval(ctx, powers_of_k_shares, X):
 
 
     # Compute [y] where y = (K+X1)(K+X2)....(K+XB) through Local computations
-    # This is a polynomial y = f(K) where the coefficients of f have been
-    # stored in `coeff`, and we have powers of [K] precomputed
+    # This is a polynomial y = f(K) where the coefficients of f have been stored in `coeff`, and we have powers of [k] precomputed
     y = coeff[B]   
 
     for i in range(B):
@@ -172,6 +182,9 @@ async def prog(ctx):
     #############################################
     ############## OFFLINE PHASE ################
     #############################################
+
+
+
     K = 77             # Secret key
     k = ctx.Share(K) + ctx.preproc.get_zero(ctx) # Obtaining shares of secret key
     powers = 20    # Powers of [K] ([K]^1, [K]^2, .... [K]^power) which we wish to precompute
@@ -185,6 +198,8 @@ async def prog(ctx):
     #############################################
     ############### ONLINE PHASE ################
     #############################################
+
+
 
     B = 6 # Number of blocks
     _X = [21, 88, 97, 33, 44, 83]  # B=6 random field elements
