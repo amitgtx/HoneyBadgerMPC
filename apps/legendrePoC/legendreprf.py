@@ -13,7 +13,8 @@ which, unfortunately, is not a property of SHA256. Fortunately, the
 "mix" function in the Proof of CUstody scheme can be replaced with 
 any PRF. Consequently, it was proposed that Legendre PRF, an 
 MPC-friendly primitive, would be a good candidate for such 
-replacement.
+replacement
+(https://ethresear.ch/t/using-the-legendre-symbol-as-a-prf-for-the-proof-of-custody/5169)
 
 The setting is such that there are n nodes out of which t might be 
 malicious. There is a secret-key K which is secret-shared among the n 
@@ -232,4 +233,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print("Legendre PRF challenge ran successfully")
+    print("Legendre PRF based Proof of Custody scheme ran successfully")
