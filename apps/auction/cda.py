@@ -26,10 +26,11 @@ config = {
 async def linear_search(ctx, key: Share, A):
     
     for a in A:
-        flag = (await (a == key).open()):
+        flag = (await (a == key).open())
         # flag = 3
         if (flag != 0):
             return a, 1
+
     return -1, 0
 
 
@@ -43,9 +44,9 @@ async def prog(ctx):
     # print(f"[{ctx.myid}] A = ", L)
 
 
-    K = 700
+    K = 30
     k = ctx.Share(K) + ctx.preproc.get_zero(ctx)
-    print(f"[{ctx.myid}] Result = ", index, result)
+    # print(f"[{ctx.myid}] Result = ", index, result)
 
 
     index, result = await linear_search(ctx, k, A)
