@@ -56,21 +56,38 @@ f can be determined from constants X1,...,XB, and we have powers of
 - Open F_k(X) and reconstruct
 
 
-The above protocol is implemented inside the prog() function. in 2 different phases:
+The above protocol is implemented inside the prog() function in 2
+ different phases:
 
-- Offline Phase : In this phase, all nodes collectively obtain a (t,n) secret-sharing of random key K, and then each node computes succesive powers of their secret share ([k], [k^2], [k^3], etc) using the offline_powers_generation() function
+- Offline Phase : In this phase, all nodes collectively obtain a (t,n)
+secret-sharing of random key K, and then each node computes succesive
+powers of their secret share ([k], [k^2], [k^3], etc) using the
+offline_powers_generation() function
 
-- Online Phase : In this phase, nodes receive a file (represented as an array X of B elements) as input, and then run the MPC protocol by consuming the preprocessed powers to obtain a secret-sharing fk_x of the desired output. The logic for same is present in the eval() function. After this, each node reconstructs the desired output FK_x using the open() function.
+- Online Phase : In this phase, nodes receive a file (represented as
+an array X of B elements) as input, and then run the MPC protocol by
+consuming the preprocessed powers to obtain a secret-sharing fk_x of
+the desired output. The logic for same is present in the eval()
+function. After this, each node reconstructs the desired output FK_x
+using the open() function.
 
 
-This implementation differs from a real-world deployment in the following way: The nodes in this demo are "simulated" as async tasks which execute concurrently on the same system and communicate with each other using message passing. However, in the real-world, each node would correspond to a validator (a standalone system) and the communication would happen over network sockets
+This implementation differs from a real-world deployment in the
+following way: The nodes in this demo are "simulated" as async tasks
+which execute concurrently on the same system and communicate with
+each other using message passing. However, in the real-world, each
+node would correspond to a validator (a standalone system) and the
+communication would happen over network sockets
 
 '''
 
 
 
 import asyncio
+import random
 from honeybadgermpc.mpc import TaskProgramRunner
+from honeybadgermpc.field import GF
+from honeybadgermpc.elliptic_curve import Subgroup
 from honeybadgermpc.progs.mixins.dataflow import Share
 from honeybadgermpc.preprocessing import (
     PreProcessedElements as FakePreProcessedElements,
@@ -84,8 +101,14 @@ from honeybadgermpc.progs.mixins.share_arithmetic import (
 
 config = {
     MixinConstants.MultiplyShareArray: BeaverMultiplyArrays(),
-    MixinConstants.MultiplyShare: BeaverMultiply(),
+    MixinConstants.MultiplyShare: BeaverMultiply()
 }
+
+FIELD = GF(Subgroup.BLS12_381)
+K = FIELD.random()         # Sampling a uniformly random Secret key
+B = random.randint(1, 100)             # Number of file blocks
+X = [FIELD.random() for _ in range(B)]  # Sampling B uniformly random field elements to be used as blocks
+
 
 # Compute [F_K(X)] := [y]^((p-1)/2) through log2 p multiply/squarings
 async def prf(ctx, y: Share):
@@ -124,7 +147,6 @@ async def eval(ctx, powers_of_k_shares, X):
     
 
     # Determing coefficients of (K + X1)(K + X2).....(K + XB)
-    B = len(X)
     coeff = [ctx.field(1)]
 
     for Xi in X:
@@ -142,18 +164,17 @@ async def eval(ctx, powers_of_k_shares, X):
 
 
     fk_x = await prf(ctx, y)
-    print(f"[{ctx.myid}] PRF OK", fk_x, type(fk_x))
+    print(f"[{ctx.myid}] PRF OK")
     
     return fk_x
 
 
 # Verify whether the reconstrcuted MPC result matches the expected
 # result F_K(X) = legendre_p( (K+X1) * (K+X2) * (K+X3)  .... (K+XB)) 
-def verify(ctx, mpcResult, K, X):
+def verify(mpcResult, K, X):
 
-    Y = ctx.field(1)
-    p = Y.modulus
-    
+    p = FIELD.modulus
+    Y = FIELD(1)
 
     #Calculating Y = (K + X1) * (K + X2) ...... * (K + XB)
     for Xi in X:
@@ -161,7 +182,7 @@ def verify(ctx, mpcResult, K, X):
 
     
     #Calculating expectedResult = legendre_p(Y)
-    expectedResult = ctx.field(1)
+    expectedResult = FIELD(1)
     exponent = int((p - 1) / 2)
 
     while exponent > 0:
@@ -177,21 +198,17 @@ def verify(ctx, mpcResult, K, X):
 async def prog(ctx):
 
 
-
-
     #############################################
     ############## OFFLINE PHASE ################
     #############################################
 
+    # Obtaining shares of secret key
+    k = ctx.Share(K) + ctx.preproc.get_zero(ctx) 
+    
+    # Powers of [K] ([K]^1, [K]^2, .... [K]^B) which we wish to precompute
+    powers_of_k_shares = offline_powers_generation(ctx, k, B) 
 
-
-    K = 77             # Secret key
-    k = ctx.Share(K) + ctx.preproc.get_zero(ctx) # Obtaining shares of secret key
-    powers = 20    # Powers of [K] ([K]^1, [K]^2, .... [K]^power) which we wish to precompute
-
- 
-    powers_of_k_shares = offline_powers_generation(ctx, k, powers)
-    print(f"[{ctx.myid}] Precompute OK")#, powers_of_k_shares)
+    print(f"[{ctx.myid}] Offline Power Generation OK")
 
 
 
@@ -200,42 +217,42 @@ async def prog(ctx):
     #############################################
 
 
-
-    B = 6 # Number of blocks
-    _X = [21, 88, 97, 33, 44, 83]  # B=6 random field elements
-    X = [ctx.field(Xi) for Xi in _X]
-
+    # Evaluating the legendre PRF on elements in public list X
     fk_x = await eval(ctx, powers_of_k_shares, X)
-    print(f"[{ctx.myid}] Eval OK", fk_x, type(fk_x))
+    print(f"[{ctx.myid}] Legendre PRF Evaluation OK")
 
 
     # Open F_k(X) and reconstruct
     FK_x = await fk_x.open()
-    print(f"[{ctx.myid}] Opening OK", FK_x, type(FK_x))
+    print(f"[{ctx.myid}] Output share reconstruction OK")
 
 
-
-
-    #############################################
-    ############ VERIFICATION PHASE #############
-    #############################################
-
-    assert verify(ctx, FK_x, K, X) == True
-    print(f"[{ctx.myid}] Verify OK")
-
+    # Return the reconstructed value
+    return FK_x
 
 
 async def legendrePRF_challenge():
     # Create a test network of 4 nodes (no sockets, just asyncio tasks)
     n, t = 4, 1
-    pp = FakePreProcessedElements()
-    pp.generate_zeros(100000, n, t)
-    pp.generate_triples(100000, n, t)
 
+    pp = FakePreProcessedElements()
+
+    # Generating secret sharings of 0
+    pp.generate_zeros(10000, n, t)
+
+    # Generating Beaver triples
+    pp.generate_triples(10000, n, t)
 
     program_runner = TaskProgramRunner(n, t, config)
     program_runner.add(prog)
     results = await program_runner.join()
+
+    # Verifying whether reconstructed output matches with the expected output
+    assert len(results) == n
+    for result in results:
+        assert verify(result, K, X) == True
+
+
     return results
 
 
