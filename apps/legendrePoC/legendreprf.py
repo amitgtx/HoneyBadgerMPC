@@ -105,9 +105,30 @@ config = {
 }
 
 FIELD = GF(Subgroup.BLS12_381)
-K = FIELD.random()         # Sampling a uniformly random Secret key
-B = random.randint(1, 100)             # Number of file blocks
-X = [FIELD.random() for _ in range(B)]  # Sampling B uniformly random field elements to be used as blocks
+
+# Sampling a uniformly random Secret key
+K = FIELD.random()
+
+# Initializing the number of file blocks
+B = random.randint(1, 100)
+
+# Sampling B uniformly random field elements to be used as blocks
+X = [FIELD.random() for _ in range(B)]  
+
+# Create a test network of 4 nodes (no sockets, just asyncio tasks)
+n, t = 4, 1
+
+pp = FakePreProcessedElements()
+
+# Generating secret sharings of 0
+pp.generate_zeros(10000, n, t)
+
+# Generating Beaver triples
+pp.generate_triples(10000, n, t)
+
+# Generating secret shares of key K 
+sid = pp.generate_share(n, t, K)
+
 
 
 # Compute [F_K(X)] := [y]^((p-1)/2) through log2 p multiply/squarings
@@ -202,12 +223,11 @@ async def prog(ctx):
     ############## OFFLINE PHASE ################
     #############################################
 
-    # Obtaining shares of secret key
-    k = ctx.Share(K) + ctx.preproc.get_zero(ctx) 
+    # Fetching a share of secret key
+    k = ctx.preproc.get_share(ctx, sid)
     
     # Powers of [K] ([K]^1, [K]^2, .... [K]^B) which we wish to precompute
-    powers_of_k_shares = offline_powers_generation(ctx, k, B) 
-
+    powers_of_k_shares = offline_powers_generation(ctx, k, B)
     print(f"[{ctx.myid}] Offline Power Generation OK")
 
 
@@ -232,17 +252,7 @@ async def prog(ctx):
 
 
 async def legendrePRF_challenge():
-    # Create a test network of 4 nodes (no sockets, just asyncio tasks)
-    n, t = 4, 1
-
-    pp = FakePreProcessedElements()
-
-    # Generating secret sharings of 0
-    pp.generate_zeros(10000, n, t)
-
-    # Generating Beaver triples
-    pp.generate_triples(10000, n, t)
-
+    
     program_runner = TaskProgramRunner(n, t, config)
     program_runner.add(prog)
     results = await program_runner.join()
@@ -251,7 +261,6 @@ async def legendrePRF_challenge():
     assert len(results) == n
     for result in results:
         assert verify(result, K, X) == True
-
 
     return results
 
