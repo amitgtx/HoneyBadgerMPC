@@ -5,7 +5,7 @@ This readme contains instructions on how to execute [`legendreprf.py`](./legendr
 
 Execution steps
 --
-- The first task is to set up the HoneyBadgerMPC environment. Follow [these instructions](../../docs/development/getting-started.rst#managing-your-development-environment-with-docker-compose) to set up the `docker-compose` development environment
+- The first task is to set up the HoneyBadgerMPC environment. Clone this repo and the follow [these instructions](../../docs/development/getting-started.rst#managing-your-development-environment-with-docker-compose) to set up the `docker-compose` development environment
 
 - Then a shell session needs to be spawned in the development container, so run:
 ```
