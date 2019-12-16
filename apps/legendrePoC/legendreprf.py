@@ -91,6 +91,8 @@ each of the n nodes in the "validator pool"
 
 import asyncio
 import random
+import time
+# import sys
 from honeybadgermpc.mpc import TaskProgramRunner
 from honeybadgermpc.field import GF
 from honeybadgermpc.elliptic_curve import Subgroup
@@ -104,6 +106,7 @@ from honeybadgermpc.progs.mixins.share_arithmetic import (
     BeaverMultiply,
     BeaverMultiplyArrays,
 )
+from honeybadgermpc import polynomial
 
 config = {
     MixinConstants.MultiplyShareArray: BeaverMultiplyArrays(),
@@ -111,6 +114,7 @@ config = {
 }
 
 FIELD = GF(Subgroup.BLS12_381)
+POLY = polynomial.polynomials_over(FIELD)
 
 # Sampling a uniformly random Secret key
 K = FIELD.random()
@@ -124,21 +128,21 @@ X = [FIELD.random() for _ in range(B)]
 # Create a test network of 4 nodes (no sockets, just asyncio tasks)
 n, t = 4, 1
 
+tBegin = time.time()
+
 pp = FakePreProcessedElements()
 
-# Generating secret sharings of 0
-pp.generate_zeros(10000, n, t)
-
 # Generating Beaver triples
-pp.generate_triples(10000, n, t)
+pp.generate_triples(B + 512, n, t)
+
+print ((B + 512), "Triples generated ", time.time() - tBegin)
 
 # Generating secret shares of key K 
 sid = pp.generate_share(n, t, K)
 
 
-
 # Compute [F_K(X)] := [y]^((p-1)/2) through log2 p multiply/squarings
-async def prf(ctx, y: Share):
+def prf(ctx, y: Share):
     
     p = ctx.field.modulus
     exponent =  int ((p - 1) / 2)
@@ -168,26 +172,49 @@ def offline_powers_generation(ctx, k: Share, powers):
     return powers_of_k_shares
 
 
+# # Compute coeffecient of the polynomial (K - X1)(K - X2).....(K - XB)
+def find_coeff_from_roots(roots):
+	
+	degree = len(roots)
+
+	if(degree == 1):
+		return POLY([roots[0], 1])
+
+	# print (int(degree/2))
+	p1 = find_coeff_from_roots(roots[:int(degree/2)])
+	p2 = find_coeff_from_roots(roots[int(degree/2):])
+
+	n = 1 << degree.bit_length()
+
+	omega = polynomial.get_omega(FIELD, n)
+
+	y1 = p1.evaluate_fft(omega, n)
+	y2 = p2.evaluate_fft(omega, n)
+
+	y = [y1[i] * y2[i] for i in range(n)]
+
+
+	y3 = POLY.interpolate_fft(y, omega)
+
+	return y3
+
+
+
+
 # Evaluting the prf on a fixed number of field elements X 
 # using precomputed secret-shared powers of K 
 async def eval(ctx, powers_of_k_shares, X):
-    
 
-    # Determing coefficients of (K + X1)(K + X2).....(K + XB)
-    coeff = [ctx.field(1)]
-
-    for Xi in X:
-        shift_coeff = coeff + [ctx.field(0)]
-        mult_coeff = [ctx.field(0)] + [elem * Xi for elem in coeff]
-        coeff = [i + j for i, j in zip(shift_coeff, mult_coeff)]
+    poly = find_coeff_from_roots(X)
+    coeff = poly.coeffs
 
 
     # Compute [y] where y = (K+X1)(K+X2)....(K+XB) through local computations
     # This is a polynomial y = f(K) where the coefficients of f have been stored in `coeff`, and we have powers of [k] precomputed
-    y = coeff[B]   
+    y = coeff[0]   
 
     for i in range(B):
-        y = y + powers_of_k_shares[i] * coeff[B - 1 - i]
+        y = y + powers_of_k_shares[i] * coeff[1 + i]
 
 
     fk_x = await prf(ctx, y)
@@ -232,9 +259,17 @@ async def prog(ctx):
     # Fetching a share of secret key
     k = ctx.preproc.get_share(ctx, sid)
     
+
+    tBegin = time.time()
     # Powers of [K] ([K]^1, [K]^2, .... [K]^B) which we wish to precompute
     powers_of_k_shares = offline_powers_generation(ctx, k, B)
-    print(f"[{ctx.myid}] Offline Power Generation OK")
+
+    await asyncio.gather(*powers_of_k_shares)
+
+    print(f"[{ctx.myid}] Offline Power Generation OK", time.time() - tBegin)
+
+    # offline_openings = ctx.opening_count
+    # print(f"[{ctx.myid}] Offline Opening Count: ", offline_openings)
 
 
 
@@ -244,14 +279,18 @@ async def prog(ctx):
 
 
     # Evaluating the legendre PRF on elements in public list X
+    tBegin = time.time()
     fk_x = await eval(ctx, powers_of_k_shares, X)
-    print(f"[{ctx.myid}] Legendre PRF Evaluation OK")
+    print(f"[{ctx.myid}] Legendre PRF Evaluation OK", time.time() - tBegin)
 
 
     # Open F_k(X) and reconstruct
+    tBegin = time.time()
     FK_x = await fk_x.open()
-    print(f"[{ctx.myid}] Output share reconstruction OK: ", FK_x)
+    print(f"[{ctx.myid}] Output share reconstruction OK: ", FK_x, time.time() - tBegin)
 
+    # online_openings = ctx.opening_count - offline_openings
+    # print(f"[{ctx.myid}] Opening Count: ", online_openings)
 
     # Return the reconstructed value
     return FK_x
@@ -280,4 +319,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print("Legendre PRF based Proof of Custody scheme ran successfully")
+    print("Legendre PRF based Proof of Custody scheme ran successfully", B, n, t)
