@@ -70,6 +70,9 @@ async def flip_biased_coin(ctx, tails_weight):
 
 	bits = 8
 
+	# Normalizing tails_weight to a real value in [0, 1]
+	normalized_tails_weight = await convert_integer_ss_to_fixed_point_ss(ctx, tails_weight).div(2 ** bits)
+
 	# Flipping a 8 bit fair coin  
 	coin = ctx.Share(0)
 
@@ -77,7 +80,10 @@ async def flip_biased_coin(ctx, tails_weight):
 
 		coin += 2**i * ctx.preproc.get_bit(ctx)
 
-	result = coin < tails_weight
+	# Normalizing coin value to a real value in [0, 1]
+	normalized_coin = await convert_integer_ss_to_fixed_point_ss(ctx, coin).div(2 ** bits)
+
+	result = await normalized_coin.lt(normalized_tails_weight)
 
 	return result
 
@@ -90,7 +96,7 @@ async def prog(ctx):
 
 	# Intializing Dad's and Mom's secret gene as some arbitrary numbers 
 	# dad = 100
-	mom = 50
+	mom = 128
 
 	for i in range(N):
 
