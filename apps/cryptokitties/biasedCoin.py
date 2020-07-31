@@ -13,7 +13,11 @@ from honeybadgermpc.progs.mixins.share_arithmetic import (
     BeaverMultiply,
     BeaverMultiplyArrays,
 )
+
+# from honeybadgermpc.progs import fixedpoint
+
 from honeybadgermpc.progs.fixedpoint import FixedPoint
+from honeybadgermpc.progs.fixedpoint import F
 
 from honeybadgermpc.progs.mixins.share_comparison import MixinConstants, Equality, LessThan
 
@@ -26,17 +30,18 @@ config = {
 }
 # import numpy as np
 
+F = 8
 
 def create_secret_share(ctx, x):
-    return FixedPoint(ctx, ctx.Share(x * 2 ** 32) + ctx.preproc.get_zero(ctx))
+    return FixedPoint(ctx, ctx.Share(x * 2 ** F) + ctx.preproc.get_zero(ctx))
 
 def create_clear_share(ctx, x):
-    return FixedPoint(ctx, ctx.Share(int(x * 2 ** 32)))   
+    return FixedPoint(ctx, ctx.Share(int(x * 2 ** F)))   
 
 
 def convert_integer_ss_to_fixed_point_ss(ctx, integer_ss):
 
-	scaled_integer_ss = integer_ss * 2 ** 32
+	scaled_integer_ss = integer_ss * 2 ** F
 
 	return FixedPoint(ctx, scaled_integer_ss)
 
@@ -68,7 +73,7 @@ def convert_integer_ss_to_fixed_point_ss(ctx, integer_ss):
 # Assumption - tails_weight is a 8 bit value (will be instantiated using some mom's gene attribute)
 async def flip_biased_coin(ctx, tails_weight):
 
-	bits = 8
+	bits = F
 
 	# Normalizing tails_weight to a real value in [0, 1]
 	normalized_tails_weight = await convert_integer_ss_to_fixed_point_ss(ctx, tails_weight).div(2 ** bits)
@@ -96,7 +101,7 @@ async def prog(ctx):
 
 	# Intializing Dad's and Mom's secret gene as some arbitrary numbers 
 	# dad = 100
-	mom = 128
+	mom = 200
 
 	for i in range(N):
 
