@@ -70,13 +70,13 @@ def convert_integer_ss_to_fixed_point_ss(ctx, integer_ss):
 
 
 
-# Assumption - tails_weight is a 8 bit value (will be instantiated using some mom's gene attribute)
-async def flip_biased_coin(ctx, tails_weight):
+# Assumption - weight is a 8 bit value
+async def flip_biased_coin(ctx, weight):
 
 	bits = F
 
-	# Normalizing tails_weight to a real value in [0, 1]
-	normalized_tails_weight = await convert_integer_ss_to_fixed_point_ss(ctx, tails_weight).div(2 ** bits)
+	# Normalizing weight to a real value in [0, 1]
+	normalized_weight = await convert_integer_ss_to_fixed_point_ss(ctx, weight).div(2 ** bits)
 
 	# Flipping a 8 bit fair coin  
 	coin = ctx.Share(0)
@@ -88,9 +88,27 @@ async def flip_biased_coin(ctx, tails_weight):
 	# Normalizing coin value to a real value in [0, 1]
 	normalized_coin = await convert_integer_ss_to_fixed_point_ss(ctx, coin).div(2 ** bits)
 
-	result = await normalized_coin.lt(normalized_tails_weight)
+	result = await normalized_coin.lt(normalized_weight)
 
 	return result
+
+
+
+# Assumption - secret_param_1, secret_param_2 will be instantiated using some mom's and dad's gene attribute respectively
+async def flip_biased_coin_2(ctx, secret_param_1, secret_param_2):
+
+	# Flipping a biased coin based on 1st secret param
+	coin1 = await flip_biased_coin(ctx, secret_param_1)
+
+	# Flipping a biased coin based on 2nd secret param
+	coin2 = await flip_biased_coin(ctx, secret_param_2)
+
+	# final_coin = await (coin1 == coin2)
+
+	# Combining both biased coins to get the final biased coin
+	final_coin = await ((ctx.Share(1) - coin1) * coin2 + coin1 * (ctx.Share(1) - coin2)) 
+
+	return final_coin
 
 
 
@@ -100,30 +118,24 @@ async def prog(ctx):
 	N = 10
 
 	# Intializing Dad's and Mom's secret gene as some arbitrary numbers 
-	# dad = 100
-	mom = 200
+	dad = 25
+	mom = 150
 
 	for i in range(N):
 
 		# Secret share of Dad's and Mom's gene
-		# dad_ss = ctx.Share(dad) + ctx.preproc.get_zero(ctx)
+		dad_ss = ctx.Share(dad) + ctx.preproc.get_zero(ctx)
 		mom_ss = ctx.Share(mom) + ctx.preproc.get_zero(ctx)
 
 
-		# Flipping a biased coin whose Head weight is depends on Dad'd gene whereas Tails weight depends on Mom's gene
-		# res_ss = await flip_biased_coin(ctx, dad_ss, mom_ss)
-		# coin_ss, normalized_coin_ss = await flip_biased_coin(ctx, dad_ss, mom_ss)
-
-	
-		coin_ss = await flip_biased_coin(ctx, mom_ss)
+		# Flipping a biased coin whose secret parameters depend on parent genes
+		coin_ss = await flip_biased_coin_2(ctx, dad_ss, mom_ss)
 
 		# Opening the output
-		# res = await res_ss.open()
 		coin = await coin_ss.open()
-		# normalized_coin = await normalized_coin_ss.open()
+
 
 		print(f"[{ctx.myid}] Biased coin {i}: {coin}")
-		# print(f"[{ctx.myid}] Biased bit {i}: {coin, normalized_coin}")
 
 
 
