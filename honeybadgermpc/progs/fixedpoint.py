@@ -215,7 +215,8 @@ class FixedPoint:
     def __init__(self, ctx, x):
         self.ctx = ctx
         if isinstance(x, (float, int)):
-            self.share = ctx.preproc.get_zero(ctx) + ctx.Share(int(x * 2 ** F))
+            # self.share = ctx.preproc.get_zero(ctx) + ctx.Share(int(x * 2 ** F))
+            self.share = ctx.Share(int(x * 2 ** F))
         elif type(x) is ctx.Share:
             self.share = x
         else:

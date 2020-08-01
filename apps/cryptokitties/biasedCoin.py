@@ -46,30 +46,6 @@ def convert_integer_ss_to_fixed_point_ss(ctx, integer_ss):
 	return FixedPoint(ctx, scaled_integer_ss)
 
 
-
-### WORK IN PROGRESS ######
-
-# async def flip_biased_coin(ctx, heads_weight, tails_weight):
-
-# 	total_weight = heads_weight + tails_weight
-
-# 	# normalized_weight = 
-
-# 	# Flipping a 20 bit fair coin  
-# 	coin = ctx.Share(0)
-# 	bits = 8
-
-# 	for i in range(bits):
-
-# 		coin += 2**i * ctx.preproc.get_bit(ctx)
-
-
-# 	normalized_coin = await convert_integer_ss_to_fixed_point_ss(ctx, coin).div(2 ** bits)
-
-# 	return coin, normalized_coin
-
-
-
 # Assumption - weight is a 8 bit value
 async def flip_biased_coin(ctx, weight):
 
@@ -124,8 +100,10 @@ async def prog(ctx):
 	for i in range(N):
 
 		# Secret share of Dad's and Mom's gene
-		dad_ss = ctx.Share(dad) + ctx.preproc.get_zero(ctx)
-		mom_ss = ctx.Share(mom) + ctx.preproc.get_zero(ctx)
+		# dad_ss = ctx.Share(dad) + ctx.preproc.get_zero(ctx)
+		dad_ss = ctx.Share(dad)
+		# mom_ss = ctx.Share(mom) + ctx.preproc.get_zero(ctx)
+		mom_ss = ctx.Share(mom)
 
 
 		# Flipping a biased coin whose secret parameters depend on parent genes
@@ -144,11 +122,10 @@ async def test_flip_biased_coin():
     # Create a test network of 4 nodes (no sockets, just asyncio tasks)
     n, t = 4, 1
     pp = FakePreProcessedElements()
-    pp.generate_zeros(10000, n, t)
+    # pp.generate_zeros(10000, n, t)	
     pp.generate_triples(10000, n, t)
-    pp.generate_rands(10000, n, t)
+    # pp.generate_rands(10000, n, t)
     pp.generate_bits(10000, n, t)
-    pp.generate_share_bits(100, n, t)
     program_runner = TaskProgramRunner(n, t, config)
     program_runner.add(prog)
     results = await program_runner.join()
