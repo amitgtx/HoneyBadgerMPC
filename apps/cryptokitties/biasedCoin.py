@@ -1,6 +1,3 @@
-"""
-hbMPC tutorial 1. Running sample MPC programs in the testing simulator
-"""
 import asyncio
 from honeybadgermpc.mpc import TaskProgramRunner
 from honeybadgermpc.progs.mixins.dataflow import Share
@@ -10,49 +7,37 @@ from honeybadgermpc.preprocessing import (
 from honeybadgermpc.utils.typecheck import TypeCheck
 from honeybadgermpc.progs.mixins.share_arithmetic import (
     MixinConstants,
-    BeaverMultiply,
-    BeaverMultiplyArrays,
+    BeaverMultiply
 )
 
-# from honeybadgermpc.progs import fixedpoint
-
-from honeybadgermpc.progs.fixedpoint import FixedPoint
-from honeybadgermpc.progs.fixedpoint import F
-
-from honeybadgermpc.progs.mixins.share_comparison import MixinConstants, Equality, LessThan
-
+from honeybadgermpc.progs import fixedpoint
 
 config = {
-    MixinConstants.MultiplyShareArray: BeaverMultiplyArrays(),
     MixinConstants.MultiplyShare: BeaverMultiply(),
-    MixinConstants.ShareLessThan: LessThan(),
-    MixinConstants.ShareEquality: Equality()
 }
-# import numpy as np
 
-F = 8
-
-def create_secret_share(ctx, x):
-    return FixedPoint(ctx, ctx.Share(x * 2 ** F) + ctx.preproc.get_zero(ctx))
-
-def create_clear_share(ctx, x):
-    return FixedPoint(ctx, ctx.Share(int(x * 2 ** F)))   
-
+# Fixing the fixed point paramters
+fixedpoint.F = 8
+fixedpoint.KAPPA = 8
+fixedpoint.K = 16
 
 def convert_integer_ss_to_fixed_point_ss(ctx, integer_ss):
 
-	scaled_integer_ss = integer_ss * 2 ** F
+	scaled_integer_ss = integer_ss * 2 ** fixedpoint.F
 
-	return FixedPoint(ctx, scaled_integer_ss)
+	return fixedpoint.FixedPoint(ctx, scaled_integer_ss)
 
 
 # Assumption - weight is a 8 bit value
 async def flip_biased_coin(ctx, weight):
 
-	bits = F
+	bits = 8
 
-	# Normalizing weight to a real value in [0, 1]
-	normalized_weight = await convert_integer_ss_to_fixed_point_ss(ctx, weight).div(2 ** bits)
+	# Setting normalizing factor to 1/2^bits and converting it to Fixedpoint representation
+	normalizing_factor = fixedpoint.FixedPoint(ctx, ctx.Share(int(2 ** fixedpoint.F / 2 ** bits)))
+
+	# Normalizing weight to a real value in [0, 1] by multiplying with the normalizing factor
+	normalized_weight = await convert_integer_ss_to_fixed_point_ss(ctx, weight).__mul__(normalizing_factor)
 
 	# Flipping a 8 bit fair coin  
 	coin = ctx.Share(0)
@@ -61,8 +46,8 @@ async def flip_biased_coin(ctx, weight):
 
 		coin += 2**i * ctx.preproc.get_bit(ctx)
 
-	# Normalizing coin value to a real value in [0, 1]
-	normalized_coin = await convert_integer_ss_to_fixed_point_ss(ctx, coin).div(2 ** bits)
+	# Normalizing coin value to a real value in [0, 1] by multiplying with the normalizing factor
+	normalized_coin = await convert_integer_ss_to_fixed_point_ss(ctx, coin).__mul__(normalizing_factor)
 
 	result = await normalized_coin.lt(normalized_weight)
 
@@ -79,9 +64,7 @@ async def flip_biased_coin_2(ctx, secret_param_1, secret_param_2):
 	# Flipping a biased coin based on 2nd secret param
 	coin2 = await flip_biased_coin(ctx, secret_param_2)
 
-	# final_coin = await (coin1 == coin2)
-
-	# Combining both biased coins to get the final biased coin
+	# Xoring both biased coins to get the final biased coin
 	final_coin = await ((ctx.Share(1) - coin1) * coin2 + coin1 * (ctx.Share(1) - coin2)) 
 
 	return final_coin
@@ -91,20 +74,20 @@ async def flip_biased_coin_2(ctx, secret_param_1, secret_param_2):
 async def prog(ctx):
 
 	# Number of biased coins that need to be flipped
-	N = 10
+	N = 11
 
 	# Intializing Dad's and Mom's secret gene as some arbitrary numbers 
-	dad = 25
-	mom = 150
+	dad = 153
+	mom = 221
+
+
+	res = ""
 
 	for i in range(N):
 
 		# Secret share of Dad's and Mom's gene
-		# dad_ss = ctx.Share(dad) + ctx.preproc.get_zero(ctx)
 		dad_ss = ctx.Share(dad)
-		# mom_ss = ctx.Share(mom) + ctx.preproc.get_zero(ctx)
 		mom_ss = ctx.Share(mom)
-
 
 		# Flipping a biased coin whose secret parameters depend on parent genes
 		coin_ss = await flip_biased_coin_2(ctx, dad_ss, mom_ss)
@@ -115,17 +98,20 @@ async def prog(ctx):
 
 		print(f"[{ctx.myid}] Biased coin {i}: {coin}")
 
+		if (coin == 0):
+			res += "D"
+		else:
+			res += "M"
 
+	print ("Result = ", res)
 
 
 async def test_flip_biased_coin():
     # Create a test network of 4 nodes (no sockets, just asyncio tasks)
     n, t = 4, 1
     pp = FakePreProcessedElements()
-    # pp.generate_zeros(10000, n, t)	
-    pp.generate_triples(10000, n, t)
-    # pp.generate_rands(10000, n, t)
-    pp.generate_bits(10000, n, t)
+    pp.generate_triples(1500, n, t)
+    pp.generate_bits(3000, n, t)
     program_runner = TaskProgramRunner(n, t, config)
     program_runner.add(prog)
     results = await program_runner.join()
@@ -137,8 +123,6 @@ def main():
     asyncio.set_event_loop(asyncio.new_event_loop())
     loop = asyncio.get_event_loop()
     loop.run_until_complete(test_flip_biased_coin())
-    # loop.run_until_complete(tutorial_2())
-
 
 if __name__ == "__main__":
     main()
