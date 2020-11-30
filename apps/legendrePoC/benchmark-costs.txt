@@ -1,0 +1,601 @@
+RSDecode: We use FFTs to achieve robust decoding with quasilinear overhead (i.e., incurring an O(n log^2 n) computational cost)
+
+
+
+Operation			Open 		Mult
+
+Triples				0		1
+Zero				0		0
+Rounds of Comm			1		1
+
+
+
+			get_share()	offline_powers_generation()	eval()		prf()		open()
+Multiplications		0			B					log2 p						
+Openings		0										1
+Local Computation							B^2 + B
+
+
+###########################################################
+############    SUMMARY OF COSTS    #######################
+###########################################################
+###########################################################
+
+
+B = 10
+Offline Power Generation = 0.088
+Online PRF Evaluation = 1.52
+Openings = 595
+
+
+B = 100
+Offline Power Generation = 0.64
+Online PRF Evaluation = 1.71
+Openings = 775
+
+
+B = 1000
+Offline Power Generation = 9.04
+Online PRF Evaluation = 8.61
+Openings = 2575
+
+
+B = 10000
+Offline Power Generation = 451.78
+Online PRF Evaluation = 691.21
+Openings = 20575
+
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+
+opening x bytes takes 6x communication per node
+
+
+Task Program Runner - router - queue - Serialize the stuff passing on the queue
+
+Add a counter to the open() function to count the number of openings, and then multiply that by 6
+
+
+B = 1000, Triples = 200000
+
+Start time =  1576001619.019636
+Triples generated  1576001683.5213563
+[0] Offline Power Generation OK 1576001688.2830033
+[0] PRF OK
+[0] Legendre PRF Evaluation OK 1576001689.9947464
+[1] Offline Power Generation OK 1576001690.0756557
+[1] PRF OK
+[1] Legendre PRF Evaluation OK 1576001691.9125476
+[2] Offline Power Generation OK 1576001691.9969444
+[2] PRF OK
+[2] Legendre PRF Evaluation OK 1576001694.9477768
+[3] Offline Power Generation OK 1576001695.0186982
+[3] PRF OK
+[3] Legendre PRF Evaluation OK 1576001697.2942822
+[0] Output share reconstruction OK:  {5842307544189556626920734883013309639718454940905616015040444332241429027703} 1576001704.6924846
+[1] Output share reconstruction OK:  {5842307544189556626920734883013309639718454940905616015040444332241429027703} 1576001704.6930535
+[2] Output share reconstruction OK:  {5842307544189556626920734883013309639718454940905616015040444332241429027703} 1576001704.6936178
+[3] Output share reconstruction OK:  {5842307544189556626920734883013309639718454940905616015040444332241429027703} 1576001704.6942112
+Legendre PRF based Proof of Custody scheme ran successfully 1576001704.7066257
+
+
+
+
+
+B = 100, Triples = 200000
+
+Start time =  1576002566.703949
+Triples generated  1576002627.872375
+[0] Offline Power Generation OK 1576002631.8430824
+[0] PRF OK
+[0] Legendre PRF Evaluation OK 1576002631.907529
+[1] Offline Power Generation OK 1576002631.9144018
+[1] PRF OK
+[1] Legendre PRF Evaluation OK 1576002631.9612172
+[2] Offline Power Generation OK 1576002631.967825
+[2] PRF OK
+[2] Legendre PRF Evaluation OK 1576002632.0148656
+[3] Offline Power Generation OK 1576002632.0217195
+[3] PRF OK
+[3] Legendre PRF Evaluation OK 1576002632.068794
+[0] Output share reconstruction OK:  {34462198102959826481301494167360745301050891729695468806036166463094534061440} 1576002634.034741
+[1] Output share reconstruction OK:  {34462198102959826481301494167360745301050891729695468806036166463094534061440} 1576002634.0348575
+[2] Output share reconstruction OK:  {34462198102959826481301494167360745301050891729695468806036166463094534061440} 1576002634.0349615
+[3] Output share reconstruction OK:  {34462198102959826481301494167360745301050891729695468806036166463094534061440} 1576002634.0351274
+Legendre PRF based Proof of Custody scheme ran successfully 1576002634.0380664
+
+
+
+
+
+
+
+
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+
+
+
+
+
+NEW Results
+
+B = 10, Triples = 10000
+
+Triples generated  2.9374091625213623
+[0] Offline Power Generation OK 0.05415081977844238
+[1] Offline Power Generation OK 0.07612872123718262
+[2] Offline Power Generation OK 0.09901976585388184
+[3] Offline Power Generation OK 0.12148261070251465
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 1.559051513671875
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 1.5355098247528076
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 1.5120162963867188
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 1.4889576435089111
+[0] Output share reconstruction OK:  {3065858590697865318844811652288676421842838542506398146653378786251357664897} 0.0018563270568847656
+[0] Opening Count:  595
+[1] Output share reconstruction OK:  {3065858590697865318844811652288676421842838542506398146653378786251357664897} 0.0016682147979736328
+[1] Opening Count:  595
+[2] Output share reconstruction OK:  {3065858590697865318844811652288676421842838542506398146653378786251357664897} 0.0015006065368652344
+[2] Opening Count:  595
+[3] Output share reconstruction OK:  {3065858590697865318844811652288676421842838542506398146653378786251357664897} 0.0013396739959716797
+[3] Opening Count:  595
+Legendre PRF based Proof of Custody scheme ran successfully 1576074579.414453
+
+
+
+
+
+
+
+
+B = 100, Triples = 100000
+
+Triples generated  27.51863121986389
+[0] Offline Power Generation OK 0.5771582126617432
+[1] Offline Power Generation OK 0.6128861904144287
+[2] Offline Power Generation OK 0.6572122573852539
+[3] Offline Power Generation OK 0.7009482383728027
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 1.7842113971710205
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 1.7338426113128662
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 1.6829214096069336
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 1.6324477195739746
+[0] Output share reconstruction OK:  {19091915381062655252932506444906322396068892175322668494813948754382392475744} 0.0019223690032958984
+[0] Opening Count:  775
+[1] Output share reconstruction OK:  {19091915381062655252932506444906322396068892175322668494813948754382392475744} 0.0017786026000976562
+[1] Opening Count:  775
+[2] Output share reconstruction OK:  {19091915381062655252932506444906322396068892175322668494813948754382392475744} 0.0016133785247802734
+[2] Opening Count:  775
+[3] Output share reconstruction OK:  {19091915381062655252932506444906322396068892175322668494813948754382392475744} 0.001428842544555664
+[3] Opening Count:  775
+Legendre PRF based Proof of Custody scheme ran successfully 1576074691.97902
+
+
+
+
+
+
+
+B = 1000, Triples = 1000000
+
+Triples generated  300.68992137908936
+[0] Offline Power Generation OK 6.240657329559326
+[1] Offline Power Generation OK 7.69162392616272
+[2] Offline Power Generation OK 9.695243835449219
+[3] Offline Power Generation OK 12.524856090545654
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 11.643547773361206
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 9.955782890319824
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 7.877610683441162
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 4.973534345626831
+[0] Output share reconstruction OK:  {21205357028121587945136545592626346047548198650758174215610385178311683915683} 0.002893209457397461
+[0] Opening Count:  2575
+[1] Output share reconstruction OK:  {21205357028121587945136545592626346047548198650758174215610385178311683915683} 0.002825498580932617
+[1] Opening Count:  2575
+[2] Output share reconstruction OK:  {21205357028121587945136545592626346047548198650758174215610385178311683915683} 0.002807140350341797
+[2] Opening Count:  2575
+[3] Output share reconstruction OK:  {21205357028121587945136545592626346047548198650758174215610385178311683915683} 0.0026509761810302734
+[3] Opening Count:  2575
+Legendre PRF based Proof of Custody scheme ran successfully 1576075103.4786458
+
+
+
+
+
+B =10000, Triples = 1000000
+
+Triples generated  32.91667151451111
+[0] Offline Power Generation OK 57.53237009048462
+[1] Offline Power Generation OK 318.06458616256714
+[2] Offline Power Generation OK 581.3604929447174
+[3] Offline Power Generation OK 850.1811485290527
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 1086.5419435501099
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 825.2819583415985
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 561.2631933689117
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 291.7345058917999
+[0] Output share reconstruction OK:  {31153156294266982956059888585923457210901114975521155066698020127929635988116} 0.015026092529296875
+[0] Opening Count:  20575
+[1] Output share reconstruction OK:  {31153156294266982956059888585923457210901114975521155066698020127929635988116} 0.016394853591918945
+[1] Opening Count:  20575
+[2] Output share reconstruction OK:  {31153156294266982956059888585923457210901114975521155066698020127929635988116} 0.017429828643798828
+[2] Opening Count:  20575
+[3] Output share reconstruction OK:  {31153156294266982956059888585923457210901114975521155066698020127929635988116} 0.0199434757232666
+[3] Opening Count:  20575
+Legendre PRF based Proof of Custody scheme ran successfully 1576076392.20497
+
+
+
+B = 100000, Triples = 1000000
+
+
+
+
+
+
+
+
+
+
+
+
+############################################
+
+	FFT results
+
+###############################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+B =10000, Triples = 1000000
+
+Triples generated  338.16972255706787
+[0] Offline Power Generation OK 65.76492094993591
+[1] Offline Power Generation OK 112.31307029724121
+[2] Offline Power Generation OK 159.47408866882324
+[3] Offline Power Generation OK 207.80229806900024
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 200.53072309494019
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 152.98046565055847
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 104.99315905570984
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 55.81745386123657
+[0] Output share reconstruction OK:  {47447500134010212205639864592101581572532508880522485473435465166167422748138} 0.004868268966674805
+[0] Opening Count:  20575
+[1] Output share reconstruction OK:  {47447500134010212205639864592101581572532508880522485473435465166167422748138} 0.008268594741821289
+[1] Opening Count:  20575
+[2] Output share reconstruction OK:  {47447500134010212205639864592101581572532508880522485473435465166167422748138} 0.01199483871459961
+[2] Opening Count:  20575
+[3] Output share reconstruction OK:  {47447500134010212205639864592101581572532508880522485473435465166167422748138} 0.015681028366088867
+[3] Opening Count:  20575
+Legendre PRF based Proof of Custody scheme ran successfully 1576089745.5998409
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################
+
+
+		Costs after removing pp.clear_preprocessing()
+
+
+###############################################################
+
+Summary (4, 1)
+
+B = 10
+Triples = 522, 0.16s
+Offline : Computation = 0.1s, Openings = 20
+Online : Computation = 1.6s, Openings = 575
+
+B = 100
+Triples = 612, 0.18s
+Offline : Computation = 0.7s, Openings = 200
+Online : Computation = 1.8s, Openings = 575
+
+B = 1000
+Triples = 1512, 0.44s
+Offline : Computation = 8s, Openings = 2000
+Online : Computation = 7s, Openings = 575
+
+B = 10000
+Triples = 10512, 3.25s
+Offline : Computation = 133s, Openings = 20000
+Online : Computation = 130s, Openings = 575
+
+
+B = 100000
+Triples = 100512, 34s
+Offline : Computation = 1667s, Openings = 200000
+Online : Computation = 1806s, Openings = 575
+
+
+
+
+-----------------------
+
+
+Summary (40, 13)
+
+B = 10
+Triples = 522, 0.66s
+Offline : Computation = 3.5s, Openings = 20
+Online : Computation = 86s, Openings = 575
+
+B = 100
+Triples = 612, 0.96s
+Offline : Computation = 29s, Openings = 200
+Online : Computation = 81s, Openings = 575
+
+
+B = 1000
+Triples = 1512, 2.31s
+Offline : Computation = 297s, Openings = 2000
+Online : Computation = 115s, Openings = 575
+
+
+B = 10000
+Triples = 10512, 16.78s
+Offline : Computation = 3500s, Openings = 20000
+Online : Computation = 937s, Openings = 575
+
+
+
+
+----------------------------
+
+
+Summary (400, 133)
+
+B = 10
+
+
+
+
+
+
+
+
+
+
+-------------------------
+
+B = 10
+
+522 Triples generated  0.15642118453979492
+[0] Offline Power Generation OK 0.054613590240478516
+[0] Offline Opening Count:  20
+[1] Offline Power Generation OK 0.08465218544006348
+[1] Offline Opening Count:  20
+[2] Offline Power Generation OK 0.11528658866882324
+[2] Offline Opening Count:  20
+[3] Offline Power Generation OK 0.14632081985473633
+[3] Offline Opening Count:  20
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 1.639098882675171
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 1.6083612442016602
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 1.5772778987884521
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 1.5456829071044922
+[0] Output share reconstruction OK:  {50947296282518158441333631021196825859515613232396003925054991677715203168685} 0.0023183822631835938
+[0] Opening Count:  575
+[1] Output share reconstruction OK:  {50947296282518158441333631021196825859515613232396003925054991677715203168685} 0.002018451690673828
+[1] Opening Count:  575
+[2] Output share reconstruction OK:  {50947296282518158441333631021196825859515613232396003925054991677715203168685} 0.0017132759094238281
+[2] Opening Count:  575
+[3] Output share reconstruction OK:  {50947296282518158441333631021196825859515613232396003925054991677715203168685} 0.0014967918395996094
+[3] Opening Count:  575
+Legendre PRF based Proof of Custody scheme ran successfully
+
+
+
+
+
+
+
+
+B = 100
+
+
+612 Triples generated  0.17814207077026367
+[0] Offline Power Generation OK 0.5230007171630859
+[0] Offline Opening Count:  200
+[1] Offline Power Generation OK 0.6607508659362793
+[1] Offline Opening Count:  200
+[2] Offline Power Generation OK 0.7949304580688477
+[2] Offline Opening Count:  200
+[3] Offline Power Generation OK 0.9312005043029785
+[3] Offline Opening Count:  200
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 2.059250831604004
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 1.9147744178771973
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 1.7735426425933838
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 1.6308069229125977
+[0] Output share reconstruction OK:  {35248108175416547703074897029457812040744706923220305639390778575962747300182} 0.0020122528076171875
+[0] Opening Count:  575
+[1] Output share reconstruction OK:  {35248108175416547703074897029457812040744706923220305639390778575962747300182} 0.001909017562866211
+[1] Opening Count:  575
+[2] Output share reconstruction OK:  {35248108175416547703074897029457812040744706923220305639390778575962747300182} 0.0017213821411132812
+[2] Opening Count:  575
+[3] Output share reconstruction OK:  {35248108175416547703074897029457812040744706923220305639390778575962747300182} 0.0016589164733886719
+[3] Opening Count:  575
+Legendre PRF based Proof of Custody scheme ran successfully
+
+
+
+
+
+B = 1000
+
+1512 Triples generated  0.43834733963012695
+[0] Offline Power Generation OK 5.470764875411987
+[0] Offline Opening Count:  2000
+[1] Offline Power Generation OK 7.361578941345215
+[1] Offline Opening Count:  2000
+[2] Offline Power Generation OK 9.271277666091919
+[2] Offline Opening Count:  2000
+[3] Offline Power Generation OK 11.214774131774902
+[3] Offline Opening Count:  2000
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 9.955238103866577
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 7.994654655456543
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 6.019989013671875
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 4.010775327682495
+[0] Output share reconstruction OK:  {8077270560507616866244874532303692009955924792410522427058175193795231357747} 0.0021474361419677734
+[0] Opening Count:  575
+[1] Output share reconstruction OK:  {8077270560507616866244874532303692009955924792410522427058175193795231357747} 0.0023272037506103516
+[1] Opening Count:  575
+[2] Output share reconstruction OK:  {8077270560507616866244874532303692009955924792410522427058175193795231357747} 0.002587556838989258
+[2] Opening Count:  575
+[3] Output share reconstruction OK:  {8077270560507616866244874532303692009955924792410522427058175193795231357747} 0.002777099609375
+[3] Opening Count:  575
+Legendre PRF based Proof of Custody scheme ran successfully
+
+
+
+
+
+B = 10000
+
+10512 Triples generated  3.254159688949585
+[0] Offline Power Generation OK 61.95734930038452
+[0] Offline Opening Count:  20000
+[1] Offline Power Generation OK 109.40978765487671
+[1] Offline Opening Count:  20000
+[2] Offline Power Generation OK 157.27895641326904
+[2] Offline Opening Count:  20000
+[3] Offline Power Generation OK 205.5744481086731
+[3] Offline Opening Count:  20000
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 202.15297985076904
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 153.97330498695374
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 105.36153244972229
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 56.324445486068726
+[0] Output share reconstruction OK:  {15172168727762237791603129202666927819831730691768645699061938839265608596332} 0.0055119991302490234
+[0] Opening Count:  575
+[1] Output share reconstruction OK:  {15172168727762237791603129202666927819831730691768645699061938839265608596332} 0.009451150894165039
+[1] Opening Count:  575
+[2] Output share reconstruction OK:  {15172168727762237791603129202666927819831730691768645699061938839265608596332} 0.01311039924621582
+[2] Opening Count:  575
+[3] Output share reconstruction OK:  {15172168727762237791603129202666927819831730691768645699061938839265608596332} 0.016933202743530273
+[3] Opening Count:  575
+Legendre PRF based Proof of Custody scheme ran successfully
+
+
+
+
+
+B = 100000
+
+100512 Triples generated  33.946650981903076
+[0] Offline Power Generation OK 695.3927221298218
+[0] Offline Opening Count:  200000
+[1] Offline Power Generation OK 1335.258799314499
+[1] Offline Opening Count:  200000
+[2] Offline Power Generation OK 1998.6829419136047
+[2] Offline Opening Count:  200000
+[3] Offline Power Generation OK 2639.2342376708984
+[3] Offline Opening Count:  200000
+[0] PRF OK <class 'abc.Share'>
+[0] Legendre PRF Evaluation OK 2790.9648988246918
+[1] PRF OK <class 'abc.Share'>
+[1] Legendre PRF Evaluation OK 2142.85942029953
+[2] PRF OK <class 'abc.Share'>
+[2] Legendre PRF Evaluation OK 1470.9084649085999
+[3] PRF OK <class 'abc.Share'>
+[3] Legendre PRF Evaluation OK 821.8257939815521
+[0] Output share reconstruction OK:  {50104683623407450432007708931440227619379707876452620070849769253255670679337} 0.04048466682434082
+[0] Opening Count:  575
+[1] Output share reconstruction OK:  {50104683623407450432007708931440227619379707876452620070849769253255670679337} 0.0894632339477539
+[1] Opening Count:  575
+[2] Output share reconstruction OK:  {50104683623407450432007708931440227619379707876452620070849769253255670679337} 0.13683366775512695
+[2] Opening Count:  575
+[3] Output share reconstruction OK:  {50104683623407450432007708931440227619379707876452620070849769253255670679337} 0.1840224266052246
+[3] Opening Count:  575
+Legendre PRF based Proof of Custody scheme ran successfully
